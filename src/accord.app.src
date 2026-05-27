@@ -1,0 +1,22 @@
+{application, accord, [
+    {description, "An OTP library"},
+    {vsn, "0.1.0"},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib,
+        gunext,
+        cowboy,
+        gun
+    ]},
+    {env, []},
+    {modules, [
+        discord_api,
+        discord_commands,
+        discord_gateway,
+        discord_heartbeat,
+        discord_ui
+    ]},
+    {licenses, ["The Unlicense"]},
+    {links, []}
+ ]}.
