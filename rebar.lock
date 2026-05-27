@@ -1,4 +1,8 @@
-[{<<"cowlib">>,
+[{<<"cowboy">>,
+  {git,"https://github.com/ninenines/cowboy",
+       {ref,"3b9fb5214d70f1c4707a095c4193214bc12a7c36"}},
+  0},
+ {<<"cowlib">>,
   {git,"https://github.com/ninenines/cowlib",
        {ref,"bae6b022af54566f3518a3aa59083b4591d552de"}},
   1},
@@ -9,4 +13,12 @@
  {<<"gunext">>,
   {git,"https://github.com/mikeyhc/gunext",
        {ref,"14664ae90e265116ec421f1c8fbb98fbfab8286b"}},
-  0}].
+  0},
+ {<<"jsone">>,
+  {git,"https://github.com/sile/jsone",
+       {ref,"331b4a7b66cc9dc7c16ac067cf8a8297e0e669d8"}},
+  0},
+ {<<"ranch">>,
+  {git,"https://github.com/ninenines/ranch",
+       {ref,"10b51304b26062e0dbfd5e74824324e9a911e269"}},
+  1}].

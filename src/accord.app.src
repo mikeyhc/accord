@@ -7,7 +7,8 @@
         stdlib,
         gunext,
         cowboy,
-        gun
+        gun,
+        jsone
     ]},
     {env, []},
     {modules, [
