@@ -39,7 +39,7 @@
 -define(MESSAGE_OP, 0).
 -define(HEARTBEAT_OP, 1).
 -define(IDENTIFY_OP, 2).
--define(RESUMSE_OP, 6).
+-define(RESUME_OP, 6).
 -define(RECONNECT_OP, 7).
 -define(INVALID_SESSION_OP, 9).
 -define(HELLO_OP, 10).
@@ -80,7 +80,8 @@ init([Module, BotToken]) ->
     {ok, disconnected, #data{module=Module,
                              configuration=#configuration{bot_token=BotToken}}}.
 
-disconnected(enter, _OldState, Data) ->
+disconnected(enter, OldState, Data) ->
+    ?LOG_INFO("disconnected from previous state ~p", [OldState]),
     {keep_state, Data};
 disconnected(cast, connect, Data) ->
     {ok, Gateway} = discord_api:get_gateway_bot(),
@@ -113,7 +114,7 @@ await_hello_reconnect(info, {gun_ws, ConnPid, StreamRef, {text, Msg}},
     #{<<"op">> := ?HELLO_OP, <<"d">> := D} = jsone:decode(Msg),
     Data = start_heartbeat(D, Data0),
     Resume = build_resume_message(Data),
-    send_ws_message(?RESUMSE_OP, Resume, Data),
+    send_ws_message(?RESUME_OP, Resume, Data),
     {next_state, await_ready, Data};
 await_hello_reconnect(info, Msg, Data) ->
     handle_common(Msg, Data).
@@ -335,11 +336,11 @@ start_heartbeat(#{<<"heartbeat_interval">> := HeartbeatIV},
 
 prepare_reconnect(Data0=#data{connection=Connection}) ->
     #connection{pid=ConnPid, mref=MRef} = Connection,
-    gen_statem:cast(self(), reconnect),
-    gun:close(ConnPid),
     Data = remove_heartbeat(Data0),
+    gun:close(ConnPid),
     gun_util:await_down(ConnPid, MRef),
-    ?LOG_INFO("connection successfully closed"),
+    ?LOG_INFO("connection ~p successfully closed", [ConnPid]),
+    gen_statem:cast(self(), reconnect),
     Data#data{connection=undefined}.
 
 open_ws_connection(Url) ->
