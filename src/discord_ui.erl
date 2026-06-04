@@ -20,7 +20,7 @@
                                atom() => any()}.
 -type discord_modal() :: #{atom() => any()}.
 -type discord_string_select_entry() :: #{label => binary(), value => binary()}.
--type discord_button_options() :: #{disabled => binary()}.
+-type discord_button_options() :: #{disabled => boolean()}.
 
 % reply functions
 -spec modal_reply(binary(), binary(), [discord_component()]) -> discord_modal().

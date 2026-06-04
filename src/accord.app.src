@@ -1,6 +1,6 @@
 {application, accord, [
     {description, "An OTP library"},
-    {vsn, "0.5.1"},
+    {vsn, "0.5.2"},
     {registered, [
         discord_api,
         discord_gateway
