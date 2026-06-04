@@ -12,7 +12,7 @@
 -define(DISCORD_HOST, "discord.com").
 -define(DISCORD_PORT, 443).
 -define(DISCORD_API_VERSION, "v10").
--define(ACCEPT_STRING, "application/json").
+-define(ACCEPT_STRING, <<"application/json">>).
 
 % Public API
 -spec start_link(string()) -> {ok, pid()}.
@@ -20,39 +20,40 @@ start_link(BotToken) ->
     Configuration = #{
         host => ?DISCORD_HOST,
         port => ?DISCORD_PORT,
-        headers =>[
+        headers => [
             {<<"accept">>, ?ACCEPT_STRING},
             {<<"authorization">>, "Bot " ++ BotToken}
         ]
     },
     http_client:start_link(?SERVER_NAME, Configuration).
 
--spec get_gateway_bot() -> {ok, #{}}.
+-spec get_gateway_bot() -> {ok, #{binary() => any()}}.
 get_gateway_bot() ->
     {ok, {200, Body}} = http_client:get(?SERVER_NAME,
                                         build_url("/gateway/bot", [])),
     {ok, json:decode(Body)}.
 
--spec register_command(non_neg_integer(), #{}) -> {ok, #{}}.
+-spec register_command(non_neg_integer(), #{any() => any()}) ->
+    {ok, #{binary() => any()}}.
 register_command(ApplicationId, Command) ->
     Url = build_url("/applications/~s/commands", [ApplicationId]),
     post_api_call(Url, jsone:encode(Command)).
 
--spec interaction_callback(iolist(), iolist(), #{}) -> ok.
+-spec interaction_callback(iodata(), iodata(), #{any() => any()}) -> ok.
 interaction_callback(InteractionId, InteractionToken, Body) ->
     Url = build_url("/interactions/~s/~s/callback",
                     [InteractionId, InteractionToken]),
     ok = post_api_call(Url, jsone:encode(Body)),
     ok.
 
--spec interaction_update(iolist(), iolist(), iolist(), #{}) -> ok.
+-spec interaction_update(iodata(), iodata(), iodata(), #{any() => any()}) -> ok.
 interaction_update(ApplicationId, InteractionToken, MessageId, Body) ->
     Url = build_url("/webhooks/~s/~s/messages/~s",
                     [ApplicationId, InteractionToken, MessageId]),
     ok = patch_api_call(Url, jsone:encode(Body)),
     ok.
 
--spec direct_message(iolist(), iolist()) -> {ok, #{}}.
+-spec direct_message(iodata(), iodata()) -> {ok, #{binary() => any()}}.
 direct_message(UserId, Message) ->
     Url = build_url("/users/@me/channels", []),
     Body = #{<<"recipient_id">> => UserId},

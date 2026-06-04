@@ -12,7 +12,7 @@
   0},
  {<<"gunext">>,
   {git,"https://github.com/mikeyhc/gunext",
-       {ref,"d1efdffc98c29ddcd22563896b3abc07bab297de"}},
+       {ref,"dbc4dcf532e9d20e5b70d2db017432b62ec5be1c"}},
   0},
  {<<"jsone">>,
   {git,"https://github.com/sile/jsone",

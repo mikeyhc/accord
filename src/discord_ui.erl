@@ -16,10 +16,11 @@
 -define(TEXT_DISPLAY, 10).
 -define(LABEL, 18).
 
--type discord_component() :: #{}.
--type discord_modal() :: #{}.
--type discord_string_select_entry() :: #{label := binary(), value := binary()}.
--type discord_button_options() :: #{disabled := binary()}.
+-type discord_component() :: #{type => non_neg_integer(),
+                               atom() => any()}.
+-type discord_modal() :: #{atom() => any()}.
+-type discord_string_select_entry() :: #{label => binary(), value => binary()}.
+-type discord_button_options() :: #{disabled => binary()}.
 
 % reply functions
 -spec modal_reply(binary(), binary(), [discord_component()]) -> discord_modal().

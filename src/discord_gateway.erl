@@ -57,7 +57,7 @@
 -record(configuration, {bot_token :: string() | binary()}).
 
 -record(data, {connection      :: optional(#connection{}),
-               heartbeat       :: optional(reference()),
+               heartbeat       :: optional(timer:tref()),
                sequence        :: optional(non_neg_integer()),
                resume_url      :: optional(binary()),
                session_id      :: optional(binary()),
@@ -377,7 +377,6 @@ build_identify_message(#data{configuration=Config}) ->
 upgrade_ws_connection(Protocol, Data) ->
     ConnPid = Data#data.connection#connection.pid,
     case Protocol of
-        ws -> Data#data.connection;
         http ->
             StreamRef = await_ws_upgrade(ConnPid),
             Data#data.connection#connection{sref=StreamRef};

@@ -1,7 +1,10 @@
 {application, accord, [
     {description, "An OTP library"},
-    {vsn, "0.5.0"},
-    {registered, []},
+    {vsn, "0.5.1"},
+    {registered, [
+        discord_api,
+        discord_gateway
+    ]},
     {applications, [
         kernel,
         stdlib,
