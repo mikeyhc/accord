@@ -19,7 +19,9 @@
         discord_commands,
         discord_gateway,
         discord_heartbeat,
-        discord_ui
+        discord_ui,
+        discord_context,
+        discord_interaction
     ]},
     {licenses, ["The Unlicense"]},
     {links, []}
