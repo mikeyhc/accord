@@ -3,7 +3,7 @@
 -include("discord_interaction_types.hrl").
 -include("discord_message_flags.hrl").
 
--export([reply/2, component_reply/2, update/2, pong/1]).
+-export([reply/2, component_reply/2, modal_reply/4, update/2, pong/1]).
 
 -define(DEFAULT_FLAGS, (?DMF_EPHEMERAL)).
 
@@ -15,7 +15,7 @@ reply(Msg, Context) ->
              content => Msg,
              flags => ?DEFAULT_FLAGS
             },
-    send_interaction_reply_(Body, Context).
+    send_interaction_reply(Body, Context).
 
 -spec component_reply(Components, Context) -> ok when
       Components :: [discord_ui:discord_component()],
@@ -25,7 +25,25 @@ component_reply(Components, Context) ->
              components => Components,
              flags => ?DEFAULT_FLAGS bor ?DMF_IS_COMPONENTS_V2
             },
-    send_interaction_reply_(Body, Context).
+    send_interaction_reply(Body, Context).
+
+-spec modal_reply(Id, Title, Components, Context) -> ok when
+      Id :: binary(),
+      Title :: binary(),
+      Components :: [discord_ui:discord_component()],
+      Context :: discord_gateway:context().
+modal_reply(Id, Title, Components,
+            #{itoken := #{interaction_id := InteractionId,
+                          interaction_token := InteractionToken}}) ->
+    Reply = #{type => ?DICT_MODAL,
+              data => #{custom_id => Id,
+                        title => Title,
+                        components => Components}},
+    discord_api:interaction_callback(
+      InteractionId,
+      InteractionToken,
+      Reply
+     ).
 
 -spec update(Components, Context) -> ok when
       Components :: [discord_ui:discord_component()],
@@ -61,10 +79,10 @@ pong(#{itoken := #{interaction_id := InteractionId,
 
 % helper functions
 
-send_interaction_reply_(Msg,
-                        #{itoken :=
-                          #{interaction_id := InteractionId,
-                            interaction_token := InteractionToken}}) ->
+send_interaction_reply(Msg,
+                       #{itoken :=
+                         #{interaction_id := InteractionId,
+                           interaction_token := InteractionToken}}) ->
     Reply = #{
               type => ?DICT_CHANNEL_MESSAGE_WITH_SOURCE,
               data => Msg
