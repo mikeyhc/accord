@@ -7,6 +7,7 @@
 
 % Public API
 -export([start_link/2]).
+-export_type([context/0]).
 
 % gen_statem callbacks
 -export([callback_mode/0, init/1]).
@@ -65,6 +66,9 @@
                module          :: atom(),
                configuration   :: #configuration{}
                }).
+
+-type context() :: #{itoken := #{interaction_id := binary(),
+                                 interaction_token := binary()}}.
 
 % Public API
 -spec start_link(atom(), string() | binary()) -> {ok, pid()}.
