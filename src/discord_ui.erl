@@ -1,13 +1,9 @@
 -module(discord_ui).
 
--export([modal_reply/3]).
 -export([action_row/1, button/4, string_select/3, text_display/1, label/2]).
 
 -export_type([discord_modal/0, discord_component/0,
               discord_string_select_entry/0, discord_button_options/0]).
-
-% reply codes
--define(MODAL_REPLY, 9).
 
 % component types
 -define(ACTION_ROW, 1).
@@ -21,14 +17,6 @@
 -type discord_modal() :: #{atom() => any()}.
 -type discord_string_select_entry() :: #{label => binary(), value => binary()}.
 -type discord_button_options() :: #{disabled => boolean()}.
-
-% reply functions
--spec modal_reply(binary(), binary(), [discord_component()]) -> discord_modal().
-modal_reply(Id, Title, Components) ->
-    #{type => ?MODAL_REPLY,
-      data => #{custom_id => Id,
-                title => Title,
-                components => Components}}.
 
 % component functions
 -spec action_row([discord_component()]) -> discord_component().
