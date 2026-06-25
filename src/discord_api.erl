@@ -1,6 +1,5 @@
 -module(discord_api).
 
--include("accord_context.hrl").
 -include_lib("kernel/include/logger.hrl").
 
 % Public API
@@ -41,8 +40,8 @@ register_command(ApplicationId, Command) ->
     post_api_call(Url, jsone:encode(Command)).
 
 -spec interaction_callback(#{any() => any()}, discord_context:context()) -> ok.
-interaction_callback(Body, #accord_context{itoken=IToken}) ->
-    #accord_itoken{id=Id, token=Token} = IToken,
+interaction_callback(Body, Context) ->
+    {Id, Token} = discord_context:itoken(Context),
     Url = build_url("/interactions/~s/~s/callback", [Id, Token]),
     ok = post_api_call(Url, jsone:encode(Body)).
 

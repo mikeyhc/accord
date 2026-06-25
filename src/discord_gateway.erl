@@ -4,7 +4,6 @@
 -include_lib("kernel/include/logger.hrl").
 -include("types.hrl").
 -include("discord_interaction_types.hrl").
--include("accord_context.hrl").
 
 % Public API
 -export([start_link/2]).
@@ -193,53 +192,37 @@ connected(info, Msg, Data) ->
 
 % helper methods
 
-handle_msg(Module,
-           D=#{<<"id">> := InteractionId,
-               <<"token">> := InteractionToken,
-               <<"data">> := Data,
-               <<"type">> := Type
-              }) ->
+handle_msg(Module, D=#{<<"data">> := Data, <<"type">> := Type}) ->
     Message = maps:get(<<"message">>, D, #{}),
-    User = case maps:get(<<"member">>, D, undefined) of
-               undefined ->
-                   case maps:get(<<"user">>, D, undefined) of
-                       undefined ->
-                           ?LOG_ERROR("no user data: ~p", [D]),
-                           undefined;
-                       UserEntry -> UserEntry
-                   end;
-               Member -> Member
-           end,
-    IToken = #accord_itoken{id=InteractionId, token=InteractionToken},
-    Context = #accord_context{user=User, itoken=IToken, d=D},
-    handle_msg(Type, Module, Data, Message, Context);
+    {ok, Context} = discord_context:new(D),
+    handle_msg(Type, Module, D, Data, Message, Context);
 handle_msg(_Module, Msg) ->
     ?LOG_ERROR("unhandled message: ~p", [Msg]),
     ok.
 
-handle_msg(?DIT_PING, _Module, _Data, _Msg, _Context) ->
+handle_msg(?DIT_PING, _Module, _D, _Data, _Msg, _Context) ->
     %% TODO investigate correct behaviour here, expect pong
     ok;
-handle_msg(?DIT_APPLICATION_COMMAND, Module, Data, Message, Context) ->
+handle_msg(?DIT_APPLICATION_COMMAND, Module, D, Data, Message, Context) ->
     case erlang:function_exported(Module, process_application_command, 3) of
         true -> Module:process_application_command(Data, Message, Context);
-        false -> Module:process(Context#accord_context.d, Context)
+        false -> Module:process(D, Context)
     end;
-handle_msg(?DIT_MESSAGE_COMPONENT, Module, Data, Message, Context) ->
+handle_msg(?DIT_MESSAGE_COMPONENT, Module, D, Data, Message, Context) ->
     case erlang:function_exported(Module, process_message_component, 3) of
         true -> Module:process_message_component(Data, Message, Context);
-        false -> Module:process(Context#accord_context.d, Context)
+        false -> Module:process(D, Context)
     end;
-handle_msg(?DIT_APPLICATION_COMMAND_AUTOCOMPLETE, Module, Data, Message, Context) ->
+handle_msg(?DIT_APPLICATION_COMMAND_AUTOCOMPLETE, Module, D, Data, Message, Context) ->
     case erlang:function_exported(Module, process_application_command_autocomplete, 3) of
         true -> Module:process_application_command_autocomplete(Data, Message,
                                                                 Context);
-        false -> Module:process(Context#accord_context.d, Context)
+        false -> Module:process(D, Context)
     end;
-handle_msg(?DIT_MODAL_SUBMIT, Module, Data, Message, Context) ->
+handle_msg(?DIT_MODAL_SUBMIT, Module, D, Data, Message, Context) ->
     case erlang:function_exported(Module, process_modal_submit, 3) of
         true -> Module:process_modal_submit(Data, Message, Context);
-        false -> Module:process(Context#accord_context.d, Context)
+        false -> Module:process(D, Context)
     end.
 
 handle_down({gun_down, ConnPid, ws, closed, _Remaining},
@@ -355,7 +338,7 @@ build_resume_message(#data{configuration=Config,
       <<"seq">> => Seq}.
 
 build_identify_message(#data{configuration=Config}) ->
-    {ok, StrVersion} = application:get_key(comictrack_bot, vsn),
+    {ok, StrVersion} = application:get_key(accord, vsn),
     Version = list_to_binary(StrVersion),
     LibraryName = <<?LIBRARY_NAME/binary, "/", Version/binary>>,
     Properties = #{<<"os">> => build_os(),

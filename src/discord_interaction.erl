@@ -2,7 +2,6 @@
 
 -include("discord_interaction_types.hrl").
 -include("discord_message_flags.hrl").
--include("accord_context.hrl").
 
 -export([reply/2, component_reply/2, modal_reply/4, update/2, pong/1]).
 
