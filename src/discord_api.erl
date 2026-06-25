@@ -5,8 +5,8 @@
 % Public API
 -export([start_link/1]).
 -export([get_gateway_bot/0]).
--export([register_command/2, interaction_callback/3, interaction_update/4]).
--export([direct_message/2]).
+-export([register_command/2, interaction_callback/2, interaction_update/4,
+         direct_message/2]).
 
 -define(SERVER_NAME, ?MODULE).
 -define(DISCORD_HOST, "discord.com").
@@ -39,19 +39,17 @@ register_command(ApplicationId, Command) ->
     Url = build_url("/applications/~s/commands", [ApplicationId]),
     post_api_call(Url, jsone:encode(Command)).
 
--spec interaction_callback(iodata(), iodata(), #{any() => any()}) -> ok.
-interaction_callback(InteractionId, InteractionToken, Body) ->
-    Url = build_url("/interactions/~s/~s/callback",
-                    [InteractionId, InteractionToken]),
-    ok = post_api_call(Url, jsone:encode(Body)),
-    ok.
+-spec interaction_callback(#{any() => any()}, discord_context:context()) -> ok.
+interaction_callback(Body, Context) ->
+    {Id, Token} = discord_context:itoken(Context),
+    Url = build_url("/interactions/~s/~s/callback", [Id, Token]),
+    ok = post_api_call(Url, jsone:encode(Body)).
 
 -spec interaction_update(iodata(), iodata(), iodata(), #{any() => any()}) -> ok.
 interaction_update(ApplicationId, InteractionToken, MessageId, Body) ->
     Url = build_url("/webhooks/~s/~s/messages/~s",
                     [ApplicationId, InteractionToken, MessageId]),
-    ok = patch_api_call(Url, jsone:encode(Body)),
-    ok.
+    ok = patch_api_call(Url, jsone:encode(Body)).
 
 -spec direct_message(iodata(), iodata()) -> {ok, #{binary() => any()}}.
 direct_message(UserId, Message) ->

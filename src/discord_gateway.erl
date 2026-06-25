@@ -7,19 +7,18 @@
 
 % Public API
 -export([start_link/2]).
--export_type([context/0]).
 
 % gen_statem callbacks
 -export([callback_mode/0, init/1]).
 -export([disconnected/3, await_hello/3, await_ready/3, await_heartbeat_ack/3,
          connected/3, await_hello_reconnect/3]).
 
--callback process(map(), context()) -> ok.
--callback process_application_command(map(), map(), context()) -> ok.
--callback process_message_component(map(), map(), context()) -> ok.
--callback process_application_command_autocomplete(map(), map(),
-                                                   context()) -> ok.
--callback process_modal_submit(map(), map(), context()) -> ok.
+
+-callback process(map(), discord_context:context()) -> ok.
+-callback process_application_command(map(), map(), discord_context:context()) -> ok.
+-callback process_message_component(map(), map(), discord_context:context()) -> ok.
+-callback process_application_command_autocomplete(map(), map(), discord_context:context()) -> ok.
+-callback process_modal_submit(map(), map(), discord_context:context()) -> ok.
 
 -optional_callbacks([process_application_command/3,
                      process_message_component/3,
@@ -32,7 +31,7 @@
 -define(RESPONSE_ENCODING, "json").
 -define(SERVER_NAME, ?MODULE).
 -define(UPGRADE_TIMEOUT, ?DEFAULT_TIMEOUT).
--define(LIBRARY_NAME, <<"comictrack">>).
+-define(LIBRARY_NAME, <<"accord">>).
 -define(INTENTS, 0).
 -define(HEARTBEAT_ACK_TIMEOUT, ?DEFAULT_TIMEOUT).
 -define(HELLO_TIMEOUT, ?DEFAULT_TIMEOUT).
@@ -67,10 +66,6 @@
                module          :: atom(),
                configuration   :: #configuration{}
                }).
-
--type context() :: #{itoken := #{interaction_id := binary(),
-                                 interaction_token := binary()},
-                     user := #{binary() := any()}}.
 
 % Public API
 -spec start_link(atom(), string() | binary()) -> {ok, pid()}.
@@ -197,59 +192,34 @@ connected(info, Msg, Data) ->
 
 % helper methods
 
-handle_msg(Module,
-           D=#{<<"id">> := InteractionId,
-               <<"token">> := InteractionToken,
-               <<"data">> := Data,
-               <<"type">> := Type
-              }) ->
+handle_msg(Module, D=#{<<"data">> := Data, <<"type">> := Type}) ->
     Message = maps:get(<<"message">>, D, #{}),
-    User = case maps:get(<<"member">>, D, undefined) of
-               undefined ->
-                   case maps:get(<<"user">>, D, undefined) of
-                       undefined ->
-                           ?LOG_ERROR("no user data: ~p", [D]),
-                           undefined;
-                       UserEntry -> UserEntry
-                   end;
-               Member -> Member
-           end,
-    IToken = #{interaction_id => InteractionId,
-               interaction_token => InteractionToken
-              },
-    Context = #{user => User,
-                itoken => IToken,
-                d => D
-               },
-    handle_msg(Type, Module, Data, Message, Context);
+    {ok, Context} = discord_context:new(D),
+    handle_msg(Type, Module, D, Data, Message, Context);
 handle_msg(_Module, Msg) ->
     ?LOG_ERROR("unhandled message: ~p", [Msg]),
     ok.
 
-handle_msg(?DIT_PING, _Module, _Data, _Msg, _Context) ->
+handle_msg(?DIT_PING, _Module, _D, _Data, _Msg, _Context) ->
     %% TODO investigate correct behaviour here, expect pong
     ok;
-handle_msg(?DIT_APPLICATION_COMMAND, Module, Data, Message,
-           Context=#{d := D}) ->
+handle_msg(?DIT_APPLICATION_COMMAND, Module, D, Data, Message, Context) ->
     case erlang:function_exported(Module, process_application_command, 3) of
         true -> Module:process_application_command(Data, Message, Context);
         false -> Module:process(D, Context)
     end;
-handle_msg(?DIT_MESSAGE_COMPONENT, Module, Data, Message,
-           Context=#{d := D}) ->
+handle_msg(?DIT_MESSAGE_COMPONENT, Module, D, Data, Message, Context) ->
     case erlang:function_exported(Module, process_message_component, 3) of
         true -> Module:process_message_component(Data, Message, Context);
         false -> Module:process(D, Context)
     end;
-handle_msg(?DIT_APPLICATION_COMMAND_AUTOCOMPLETE, Module, Data, Message,
-           Context=#{d := D}) ->
+handle_msg(?DIT_APPLICATION_COMMAND_AUTOCOMPLETE, Module, D, Data, Message, Context) ->
     case erlang:function_exported(Module, process_application_command_autocomplete, 3) of
         true -> Module:process_application_command_autocomplete(Data, Message,
                                                                 Context);
         false -> Module:process(D, Context)
     end;
-handle_msg(?DIT_MODAL_SUBMIT, Module, Data, Message,
-           Context=#{d := D}) ->
+handle_msg(?DIT_MODAL_SUBMIT, Module, D, Data, Message, Context) ->
     case erlang:function_exported(Module, process_modal_submit, 3) of
         true -> Module:process_modal_submit(Data, Message, Context);
         false -> Module:process(D, Context)
@@ -368,7 +338,7 @@ build_resume_message(#data{configuration=Config,
       <<"seq">> => Seq}.
 
 build_identify_message(#data{configuration=Config}) ->
-    {ok, StrVersion} = application:get_key(comictrack_bot, vsn),
+    {ok, StrVersion} = application:get_key(accord, vsn),
     Version = list_to_binary(StrVersion),
     LibraryName = <<?LIBRARY_NAME/binary, "/", Version/binary>>,
     Properties = #{<<"os">> => build_os(),

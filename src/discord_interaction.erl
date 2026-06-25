@@ -9,7 +9,7 @@
 
 -spec reply(Msg, Context) -> ok when
       Msg :: binary(),
-      Context :: discord_gateway:context().
+      Context :: discord_context:context().
 reply(Msg, Context) ->
     Body = #{
              content => Msg,
@@ -19,7 +19,7 @@ reply(Msg, Context) ->
 
 -spec component_reply(Components, Context) -> ok when
       Components :: [discord_ui:discord_component()],
-      Context :: discord_gateway:context().
+      Context :: discord_context:context().
 component_reply(Components, Context) ->
     Body = #{
              components => Components,
@@ -31,26 +31,18 @@ component_reply(Components, Context) ->
       Id :: binary(),
       Title :: binary(),
       Components :: [discord_ui:discord_component()],
-      Context :: discord_gateway:context().
-modal_reply(Id, Title, Components,
-            #{itoken := #{interaction_id := InteractionId,
-                          interaction_token := InteractionToken}}) ->
+      Context :: discord_context:context().
+modal_reply(Id, Title, Components, Context) ->
     Reply = #{type => ?DICT_MODAL,
               data => #{custom_id => Id,
                         title => Title,
                         components => Components}},
-    discord_api:interaction_callback(
-      InteractionId,
-      InteractionToken,
-      Reply
-     ).
+    discord_api:interaction_callback(Reply, Context).
 
 -spec update(Components, Context) -> ok when
       Components :: [discord_ui:discord_component()],
-      Context :: discord_gateway:context().
-update(Msg, #{itoken := #{interaction_id := InteractionId,
-                          interaction_token := InteractionToken
-                         }}) ->
+      Context :: discord_context:context().
+update(Msg, Context) ->
     Update = #{
                type => ?DICT_UPDATE_MESSAGE,
                data => #{
@@ -58,37 +50,19 @@ update(Msg, #{itoken := #{interaction_id := InteractionId,
                    flags => ?DEFAULT_FLAGS bor ?DMF_IS_COMPONENTS_V2
                }
               },
-    discord_api:interaction_callback(
-      InteractionId,
-      InteractionToken,
-      Update
-     ).
-
+    discord_api:interaction_callback(Update, Context).
 
 -spec pong(Context) -> ok when
-      Context :: discord_gateway:context().
-pong(#{itoken := #{interaction_id := InteractionId,
-                   interaction_token := InteractionToken
-                  }}) ->
+      Context :: discord_context:context().
+pong(Context) ->
     Pong = #{type => ?DICT_DEFERRED_UPDATE_MESSAGE},
-    discord_api:interaction_callback(
-      InteractionId,
-      InteractionToken,
-      Pong
-     ).
+    discord_api:interaction_callback(Pong, Context).
 
 % helper functions
 
-send_interaction_reply(Msg,
-                       #{itoken :=
-                         #{interaction_id := InteractionId,
-                           interaction_token := InteractionToken}}) ->
+send_interaction_reply(Msg, Context) ->
     Reply = #{
               type => ?DICT_CHANNEL_MESSAGE_WITH_SOURCE,
               data => Msg
              },
-    discord_api:interaction_callback(
-      InteractionId,
-      InteractionToken,
-      Reply
-     ).
+    discord_api:interaction_callback(Reply, Context).
