@@ -1,7 +1,8 @@
 -module(discord_ui).
 
--export([action_row/1, button/4, string_select/3, text_display/1, label/2,
-         component_type_id_to_atom/1, select_option/2, select_option/3]).
+-export([action_row/1, button/4, string_select/2, string_select/3,
+         text_display/1, label/2, component_type_id_to_atom/1, select_option/2,
+         select_option/3]).
 
 -export_type([discord_modal/0, discord_component/0,
               discord_select_option/0, discord_button_options/0,
@@ -71,14 +72,26 @@ button(Style, Label, CustomId, Options) ->
       disabled => maps:get(disabled, Options, false)
      }.
 
--spec string_select(binary(), binary(), [discord_select_option()]) ->
-    discord_component().
-string_select(Id, Placeholder, Options) ->
-    #{type => ?STRING_SELECT,
-      custom_id => Id,
-      placeholder => Placeholder,
-      options => Options
-     }.
+-spec string_select(Id, Options) -> discord_component() when
+      Id :: binary(),
+      Options :: [discord_select_option()].
+string_select(Id, Options) -> string_select(Id, Options, #{}).
+
+-spec string_select(Id, Options, SelectOptions) -> discord_component() when
+      Id :: binary(),
+      Options :: [discord_select_option()],
+      SelectOptions :: #{id => binary(),
+                         placeholder => binary(),
+                         min_values => 0..25,
+                         max_values => 1..25,
+                         required => boolean(),
+                         disabled => boolean()}.
+string_select(Id, Options, SelectOptions) ->
+    Base =#{type => ?STRING_SELECT,
+            custom_id => Id,
+            options => Options
+           },
+    maps:merge(SelectOptions, Base).
 
 -spec text_display(binary()) -> discord_component().
 text_display(Content) ->
@@ -129,4 +142,4 @@ select_option(Label, Value) -> select_option(Label, Value, #{}).
                    description => binary()
                   }.
 select_option(Label, Value, Options) ->
-    maps:merge(#{label => Label, value => Value}, Options).
+    maps:merge(Options, #{label => Label, value => Value}).
