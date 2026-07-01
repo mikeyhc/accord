@@ -1,22 +1,53 @@
 -module(discord_ui).
 
--export([action_row/1, button/4, string_select/3, text_display/1, label/2]).
+-export([action_row/1, button/4, string_select/3, text_display/1, label/2,
+         component_type_id_to_atom/1]).
 
 -export_type([discord_modal/0, discord_component/0,
-              discord_string_select_entry/0, discord_button_options/0]).
+              discord_string_select_entry/0, discord_button_options/0,
+              discord_component_type/0]).
 
 % component types
 -define(ACTION_ROW, 1).
 -define(BUTTON, 2).
 -define(STRING_SELECT, 3).
+-define(TEXT_INPUT, 4).
+-define(USER_SELECT, 5).
+-define(ROLE_SELECT, 6).
+-define(MENTIONABLE_SELECT, 7).
+-define(CHANNEL_SELECT, 8).
+-define(SECTION, 9).
 -define(TEXT_DISPLAY, 10).
+-define(THUMBNAIL, 11).
+-define(MEDIA_GALLERY, 12).
+-define(D_FILE, 13).
+-define(SEPARATOR, 14).
+-define(CONTAINER, 17).
 -define(LABEL, 18).
+-define(FILE_UPLOAD, 19).
+-define(RADIO_GROUP, 21).
+-define(CHECKBOX_GROUP, 22).
+-define(CHECKBOX, 23).
 
 -type discord_component() :: #{type => non_neg_integer(),
                                atom() => any()}.
 -type discord_modal() :: #{atom() => any()}.
 -type discord_string_select_entry() :: #{label => binary(), value => binary()}.
 -type discord_button_options() :: #{disabled => boolean()}.
+-type discord_component_type() :: action_row | button | string_select |
+                                  text_input | user_select | role_select |
+                                  mentionable_select | channeL_select |
+                                  section | text_display | thumbnail |
+                                  media_gallery | file | separator |
+                                  container | label | file_upload |
+                                  radio_group | checkbox_group | checkbox.
+-type discord_component_id() :: ?ACTION_ROW | ?BUTTON | ?STRING_SELECT |
+                                ?TEXT_INPUT | ?USER_SELECT | ?ROLE_SELECT |
+                                ?MENTIONABLE_SELECT | ?CHANNEL_SELECT |
+                                ?SECTION | ?TEXT_DISPLAY | ?THUMBNAIL |
+                                ?MEDIA_GALLERY | ?D_FILE | ?SEPARATOR |
+                                ?CONTAINER | ?LABEL | ?FILE_UPLOAD |
+                                ?RADIO_GROUP | ?CHECKBOX_GROUP | ?CHECKBOX.
 
 % component functions
 -spec action_row([discord_component()]) -> discord_component().
@@ -56,3 +87,25 @@ label(Text, Component) ->
       label => Text,
       component => Component
      }.
+
+-spec component_type_id_to_atom(discord_component_id()) -> discord_component_type().
+component_type_id_to_atom(?ACTION_ROW) -> action_row;
+component_type_id_to_atom(?BUTTON) -> button;
+component_type_id_to_atom(?STRING_SELECT) -> string_select;
+component_type_id_to_atom(?TEXT_INPUT) -> text_input;
+component_type_id_to_atom(?USER_SELECT) -> user_select;
+component_type_id_to_atom(?ROLE_SELECT) -> role_select;
+component_type_id_to_atom(?MENTIONABLE_SELECT) -> mentionable_select;
+component_type_id_to_atom(?CHANNEL_SELECT) -> channeL_select;
+component_type_id_to_atom(?SECTION) -> section;
+component_type_id_to_atom(?TEXT_DISPLAY) -> text_display;
+component_type_id_to_atom(?THUMBNAIL) -> thumbnail;
+component_type_id_to_atom(?MEDIA_GALLERY) -> media_gallery;
+component_type_id_to_atom(?D_FILE) -> file;
+component_type_id_to_atom(?SEPARATOR) -> separator;
+component_type_id_to_atom(?CONTAINER) -> container;
+component_type_id_to_atom(?LABEL) -> label;
+component_type_id_to_atom(?FILE_UPLOAD) -> file_upload;
+component_type_id_to_atom(?RADIO_GROUP) -> radio_group;
+component_type_id_to_atom(?CHECKBOX_GROUP) -> checkbox_group;
+component_type_id_to_atom(?CHECKBOX) -> checkbox.
