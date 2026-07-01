@@ -16,12 +16,13 @@
 
 -callback process(map(), discord_context:context()) -> ok.
 -callback process_application_command(map(), map(), discord_context:context()) -> ok.
--callback process_message_component(map(), map(), discord_context:context()) -> ok.
+-callback process_message_component(discord_ui:discord_component_type(), binary(),
+                                    map(), discord_context:context()) -> ok.
 -callback process_application_command_autocomplete(map(), map(), discord_context:context()) -> ok.
 -callback process_modal_submit(map(), map(), discord_context:context()) -> ok.
 
 -optional_callbacks([process_application_command/3,
-                     process_message_component/3,
+                     process_message_component/4,
                      process_application_command_autocomplete/3,
                      process_modal_submit/3]).
 
@@ -208,9 +209,15 @@ handle_msg(?DIT_APPLICATION_COMMAND, Module, D, Data, Message, Context) ->
         true -> Module:process_application_command(Data, Message, Context);
         false -> Module:process(D, Context)
     end;
-handle_msg(?DIT_MESSAGE_COMPONENT, Module, D, Data, Message, Context) ->
-    case erlang:function_exported(Module, process_message_component, 3) of
-        true -> Module:process_message_component(Data, Message, Context);
+handle_msg(?DIT_MESSAGE_COMPONENT, Module, D, Data, _Message, Context) ->
+    case erlang:function_exported(Module, process_message_component, 4) of
+        true ->
+            #{<<"component_type">> := ComponentTypeId,
+              <<"custom_id">> := CustomId} = Data,
+            ComponentType = discord_ui:component_type_id_to_atom(ComponentTypeId),
+            Data0 = Data#{<<"component_type">> := ComponentType},
+            Module:process_message_component(ComponentType, CustomId, Data0,
+                                             Context);
         false -> Module:process(D, Context)
     end;
 handle_msg(?DIT_APPLICATION_COMMAND_AUTOCOMPLETE, Module, D, Data, Message, Context) ->
