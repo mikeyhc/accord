@@ -1,10 +1,10 @@
 -module(discord_ui).
 
 -export([action_row/1, button/4, string_select/3, text_display/1, label/2,
-         component_type_id_to_atom/1]).
+         component_type_id_to_atom/1, select_option/2, select_option/3]).
 
 -export_type([discord_modal/0, discord_component/0,
-              discord_string_select_entry/0, discord_button_options/0,
+              discord_select_option/0, discord_button_options/0,
               discord_component_type/0]).
 
 % component types
@@ -29,10 +29,15 @@
 -define(CHECKBOX_GROUP, 22).
 -define(CHECKBOX, 23).
 
--type discord_component() :: #{type => non_neg_integer(),
+-type discord_component() :: #{type := non_neg_integer(),
                                atom() => any()}.
 -type discord_modal() :: #{atom() => any()}.
--type discord_string_select_entry() :: #{label => binary(), value => binary()}.
+-type discord_select_option() :: #{label := binary(),
+                                   value := binary(),
+                                   emoji => binary(),
+                                   default => boolean(),
+                                   description => binary()
+                                  }.
 -type discord_button_options() :: #{disabled => boolean()}.
 -type discord_component_type() :: action_row | button | string_select |
                                   text_input | user_select | role_select |
@@ -66,7 +71,7 @@ button(Style, Label, CustomId, Options) ->
       disabled => maps:get(disabled, Options, false)
      }.
 
--spec string_select(binary(), binary(), [discord_string_select_entry()]) ->
+-spec string_select(binary(), binary(), [discord_select_option()]) ->
     discord_component().
 string_select(Id, Placeholder, Options) ->
     #{type => ?STRING_SELECT,
@@ -88,7 +93,8 @@ label(Text, Component) ->
       component => Component
      }.
 
--spec component_type_id_to_atom(discord_component_id()) -> discord_component_type().
+-spec component_type_id_to_atom(discord_component_id()) ->
+    discord_component_type().
 component_type_id_to_atom(?ACTION_ROW) -> action_row;
 component_type_id_to_atom(?BUTTON) -> button;
 component_type_id_to_atom(?STRING_SELECT) -> string_select;
@@ -109,3 +115,18 @@ component_type_id_to_atom(?FILE_UPLOAD) -> file_upload;
 component_type_id_to_atom(?RADIO_GROUP) -> radio_group;
 component_type_id_to_atom(?CHECKBOX_GROUP) -> checkbox_group;
 component_type_id_to_atom(?CHECKBOX) -> checkbox.
+
+-spec select_option(Label, Value) -> discord_select_option() when
+      Label :: binary(),
+      Value :: binary().
+select_option(Label, Value) -> select_option(Label, Value, #{}).
+
+-spec select_option(Label, Value, Options) -> discord_select_option() when
+      Label :: binary(),
+      Value :: binary(),
+      Options :: #{emoji => binary(),
+                   default => boolean(),
+                   description => binary()
+                  }.
+select_option(Label, Value, Options) ->
+    maps:merge(#{label => Label, value => Value}, Options).
