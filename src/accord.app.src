@@ -1,6 +1,6 @@
 {application, accord, [
     {description, "A simple (and incomplete) discord bot framework"},
-    {vsn, "0.5.2"},
+    {vsn, "0.9.1"},
     {registered, [
         discord_api,
         discord_gateway
