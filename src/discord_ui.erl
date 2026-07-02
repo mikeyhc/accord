@@ -83,7 +83,7 @@ action_row(Components) ->
                    disabled => boolean()}.
 button(Style, Options) ->
     Base = #{type => ?BUTTON,
-              style => Style
+             style => button_style_to_int(Style)
              },
     maps:merge(Options, Base).
 
@@ -158,3 +158,12 @@ select_option(Label, Value) -> select_option(Label, Value, #{}).
                   }.
 select_option(Label, Value, Options) ->
     maps:merge(Options, #{label => Label, value => Value}).
+
+% helper methods
+
+button_style_to_int(primary) -> 1;
+button_style_to_int(secondary) -> 2;
+button_style_to_int(success) -> 3;
+button_style_to_int(danger) -> 4;
+button_style_to_int(link) -> 5;
+button_style_to_int(premium) -> 6.
