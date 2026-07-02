@@ -1,6 +1,6 @@
 -module(discord_ui).
 
--export([action_row/1, button/4, string_select/2, string_select/3,
+-export([action_row/1, button/2, string_select/2, string_select/3,
          text_display/1, label/2, component_type_id_to_atom/1, select_option/2,
          select_option/3]).
 
@@ -54,6 +54,16 @@
                                 ?MEDIA_GALLERY | ?D_FILE | ?SEPARATOR |
                                 ?CONTAINER | ?LABEL | ?FILE_UPLOAD |
                                 ?RADIO_GROUP | ?CHECKBOX_GROUP | ?CHECKBOX.
+-type discord_button_style() :: primary | secondary | success | danger | link |
+                                premium.
+-type discord_emoji() :: #{id := null | binary(),
+                           name := null | binary(),
+                           roles => binary(),
+                           user => #{any() => any()},
+                           require_colons => boolean(),
+                           managed => boolean(),
+                           animated => boolean(),
+                           available => boolean()}.
 
 % component functions
 -spec action_row([discord_component()]) -> discord_component().
@@ -62,15 +72,20 @@ action_row(Components) ->
       components => Components
      }.
 
--spec button(non_neg_integer(), binary(), binary(),
-             discord_button_options()) -> discord_component().
-button(Style, Label, CustomId, Options) ->
-    #{type => ?BUTTON,
-      style => Style,
-      label => Label,
-      custom_id => CustomId,
-      disabled => maps:get(disabled, Options, false)
-     }.
+-spec button(Style, Options) -> discord_component() when
+      Style :: discord_button_style(),
+      Options :: #{id => non_neg_integer(),
+                   label => binary(),
+                   emoji => discord_emoji(),
+                   custom_id => binary(),
+                   sku_id => binary(),
+                   url => binary(),
+                   disabled => boolean()}.
+button(Style, Options) ->
+    Base = #{type => ?BUTTON,
+              style => Style
+             },
+    maps:merge(Options, Base).
 
 -spec string_select(Id, Options) -> discord_component() when
       Id :: binary(),
@@ -137,7 +152,7 @@ select_option(Label, Value) -> select_option(Label, Value, #{}).
 -spec select_option(Label, Value, Options) -> discord_select_option() when
       Label :: binary(),
       Value :: binary(),
-      Options :: #{emoji => binary(),
+      Options :: #{emoji => discord_emoji(),
                    default => boolean(),
                    description => binary()
                   }.
