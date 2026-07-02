@@ -3,7 +3,6 @@
 
 -include_lib("kernel/include/logger.hrl").
 -include("types.hrl").
--include("discord_interaction_types.hrl").
 
 % Public API
 -export([start_link/2]).
@@ -49,6 +48,13 @@
 
 % ws codes
 -define(WS_SERVICE_RESTART, 1012).
+
+% interaction types
+-define(DIT_PING, 1).
+-define(DIT_APPLICATION_COMMAND, 2).
+-define(DIT_MESSAGE_COMPONENT, 3).
+-define(DIT_APPLICATION_COMMAND_AUTOCOMPLETE, 4).
+-define(DIT_MODAL_SUBMIT, 5).
 
 -record(connection, {pid  :: pid(),
                      mref :: reference(),
