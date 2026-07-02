@@ -1,9 +1,18 @@
 -module(discord_interaction).
 
--include("discord_interaction_types.hrl").
 -include("discord_message_flags.hrl").
 
 -export([reply/2, component_reply/2, modal_reply/4, update/2, pong/1]).
+
+-define(DICT_PONG, 1).
+-define(DICT_CHANNEL_MESSAGE_WITH_SOURCE, 4).
+-define(DICT_DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE, 5).
+-define(DICT_DEFERRED_UPDATE_MESSAGE, 6).
+-define(DICT_UPDATE_MESSAGE, 7).
+-define(DICT_APPLICATION_COMMAND_AUTOCOMPLETE_RESULT, 8).
+-define(DICT_MODAL, 9).
+-define(DICT_PREMIUM_REQUIRED, 10).
+-define(DICT_LAUNCH_ACTIVITY, 12).
 
 -define(DEFAULT_FLAGS, (?DMF_EPHEMERAL)).
 
