@@ -1,5 +1,5 @@
 {application, accord, [
-    {description, "An OTP library"},
+    {description, "A simple (and incomplete) discord bot framework"},
     {vsn, "0.5.2"},
     {registered, [
         discord_api,
